@@ -21,13 +21,14 @@ base_cfg = {
                     "sensor_type": "RGBCamera",
                     "socket": "CameraSocket",
                     # note the different camera name. Regression test for #197
-                    "sensor_name": "TestCamera"
+                    "sensor_name": "TestCamera",
                 }
             ],
             "control_scheme": 0,
-            "location": [.95, -1.75, .5] # if you change this, you must change rotation_env too.
+            # if you change this, you must change rotation_env too.
+            "location": [0.95, -1.75, 0.5,],
         }
-    ]
+    ],
 }
 
 
@@ -44,21 +45,27 @@ def test_rgb_camera(resolution, request):
 
     cfg["agents"][0]["sensors"][0]["configuration"] = {
         "CaptureWidth": resolution,
-        "CaptureHeight": resolution
+        "CaptureHeight": resolution,
     }
 
     binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=cfg,
-                                                   binary_path=binary_path,
-                                                   show_viewport=False,
-                                                   uuid=str(uuid.uuid4())) as env:
+    with holodeck.environments.HolodeckEnvironment(
+        scenario=cfg,
+        binary_path=binary_path,
+        show_viewport=False,
+        uuid=str(uuid.uuid4()),
+    ) as env:
 
         for _ in range(5):
             env.tick()
 
-        pixels = env.tick()['TestCamera'][:, :, 0:3]
-        baseline = cv2.imread(os.path.join(request.fspath.dirname, "expected", "{}.png".format(resolution)))
+        pixels = env.tick()["TestCamera"][:, :, 0:3]
+        baseline = cv2.imread(
+            os.path.join(
+                request.fspath.dirname, "expected", "{}.png".format(resolution)
+            )
+        )
         err = mean_square_err(pixels, baseline)
 
         assert err < 2000
@@ -77,7 +84,7 @@ def make_ticks_per_capture_env():
 
     cfg["agents"][0]["sensors"][0]["configuration"] = {
         "CaptureWidth": 512,
-        "CaptureHeight": 512
+        "CaptureHeight": 512,
     }
 
     binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
@@ -86,7 +93,8 @@ def make_ticks_per_capture_env():
         scenario=cfg,
         binary_path=binary_path,
         show_viewport=False,
-        uuid=str(uuid.uuid4()))
+        uuid=str(uuid.uuid4()),
+    )
 
 
 def test_rgb_camera_ticks_per_capture(ticks_per_capture):
@@ -98,7 +106,7 @@ def test_rgb_camera_ticks_per_capture(ticks_per_capture):
 
     """
     global shared_ticks_per_capture_env
-    
+
     if shared_ticks_per_capture_env is None:
         make_ticks_per_capture_env()
 
@@ -111,29 +119,32 @@ def test_rgb_camera_ticks_per_capture(ticks_per_capture):
     env.agents["sphere0"].sensors["TestCamera"].set_ticks_per_capture(ticks_per_capture)
 
     # Take the initial capture, and wait until it changes
-    initial = env.tick()['TestCamera'][:, :, 0:3]
+    initial = env.tick()["TestCamera"][:, :, 0:3]
 
     MAX_TRIES = 50
     tries = 0
 
     while tries < MAX_TRIES:
-        intermediate = env.tick()['TestCamera'][:, :, 0:3]
+        intermediate = env.tick()["TestCamera"][:, :, 0:3]
         if mean_square_err(initial, intermediate) > 10:
             break
         tries += 1
 
     assert MAX_TRIES != tries, "Timed out waiting for the image to change!"
 
-    # On the last tick, intermediate changed. Now, it should take 
+    # On the last tick, intermediate changed. Now, it should take
     # ticks_per_capture ticks for it to change again.
-    initial = intermediate 
+    initial = intermediate
     for _ in range(ticks_per_capture - 1):
         # Make sure it doesn't change
-        intermediate = env.tick()['TestCamera'][:, :, 0:3]
-        assert mean_square_err(initial, intermediate) < 10, "The RGBCamera output changed unexpectedly!"
+        intermediate = env.tick()["TestCamera"][:, :, 0:3]
+        assert (
+            mean_square_err(initial, intermediate) < 10
+        ), "The RGBCamera output changed unexpectedly!"
 
     # Now it should change
 
-    final = env.tick()['TestCamera'][:, :, 0:3]
-    assert mean_square_err(initial, final) > 10, "The RGBCamera output did not change when expected!"
-
+    final = env.tick()["TestCamera"][:, :, 0:3]
+    assert (
+        mean_square_err(initial, final) > 10
+    ), "The RGBCamera output did not change when expected!"

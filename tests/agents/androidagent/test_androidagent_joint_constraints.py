@@ -1,6 +1,7 @@
 import uuid
 from holodeck import environments, packagemanager
 
+# fmt: off
 config = {
     "name": "test_android_joint_sensor",
     "world": "TestWorld",
@@ -52,18 +53,21 @@ known_constraints = {
         "twist_limit": 2
     }
 }
+# fmt: on
 
 
 def test_android_constraints():
     binary_path = packagemanager.get_binary_path_for_package("DefaultWorlds")
 
-    with environments.HolodeckEnvironment(scenario=config,
-                                          binary_path=binary_path,
-                                          show_viewport=False,
-                                          uuid=str(uuid.uuid4())) as env:
+    with environments.HolodeckEnvironment(
+        scenario=config,
+        binary_path=binary_path,
+        show_viewport=False,
+        uuid=str(uuid.uuid4()),
+    ) as env:
         not_exist = env.get_joint_constraints("android0", "does_not_exist")
-        assert (not_exist is None)
+        assert not_exist is None
 
         for joint_name in known_constraints.keys():
             constraint = env.get_joint_constraints("android0", joint_name)
-            assert (constraint == known_constraints[joint_name])
+            assert constraint == known_constraints[joint_name]

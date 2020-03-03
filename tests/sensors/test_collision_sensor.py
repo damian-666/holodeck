@@ -9,15 +9,11 @@ uav_config = {
         {
             "agent_name": "uav0",
             "agent_type": "UavAgent",
-            "sensors": [
-                {
-                    "sensor_type": "CollisionSensor",
-                }
-            ],
+            "sensors": [{"sensor_type": "CollisionSensor",}],
             "control_scheme": 0,
-            "location": [0, 0, 5]
+            "location": [0, 0, 5],
         }
-    ]
+    ],
 }
 
 
@@ -28,13 +24,17 @@ def test_collision_sensor_uav_falling():
 
     binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=uav_config,
-                                                   binary_path=binary_path,
-                                                   show_viewport=False,
-                                                   uuid=str(uuid.uuid4())) as env:
+    with holodeck.environments.HolodeckEnvironment(
+        scenario=uav_config,
+        binary_path=binary_path,
+        show_viewport=False,
+        uuid=str(uuid.uuid4()),
+    ) as env:
         collided = env.tick()["CollisionSensor"][0]
 
-        assert not collided, "The UAV is in the air but reported it collided with something!"
+        assert (
+            not collided
+        ), "The UAV is in the air but reported it collided with something!"
 
         for _ in range(80):
             if env.tick()["CollisionSensor"][0]:
@@ -54,4 +54,3 @@ def test_collision_sensor_uav_falling():
             env.tick()
 
         assert not env.tick()["CollisionSensor"][0], "The UAV is still colliding?"
-

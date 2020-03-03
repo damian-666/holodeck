@@ -9,15 +9,11 @@ uav_config = {
         {
             "agent_name": "uav0",
             "agent_type": "UavAgent",
-            "sensors": [
-                {
-                    "sensor_type": "VelocitySensor",
-                }
-            ],
+            "sensors": [{"sensor_type": "VelocitySensor",}],
             "control_scheme": 0,
-            "location": [0, 0, 5]
+            "location": [0, 0, 5],
         }
-    ]
+    ],
 }
 
 
@@ -28,10 +24,12 @@ def test_velocity_sensor_uav_z_axis():
 
     binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=uav_config,
-                                                   binary_path=binary_path,
-                                                   show_viewport=False,
-                                                   uuid=str(uuid.uuid4())) as env:
+    with holodeck.environments.HolodeckEnvironment(
+        scenario=uav_config,
+        binary_path=binary_path,
+        show_viewport=False,
+        uuid=str(uuid.uuid4()),
+    ) as env:
         last_z_velocity = env.tick()["VelocitySensor"][2]
 
         for _ in range(50):

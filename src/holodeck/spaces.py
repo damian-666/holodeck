@@ -12,6 +12,7 @@ class ActionSpace:
 
             Only use this when it is different from shape.
     """
+
     def __init__(self, shape, buffer_shape=None):
         super(ActionSpace, self).__init__()
         self._shape = shape
@@ -49,6 +50,7 @@ class ContinuousActionSpace(ActionSpace):
 
             Only use this when it is different from ``shape``.
         """
+
     def __init__(self, shape, sample_fn=None, buffer_shape=None):
         super(ContinuousActionSpace, self).__init__(shape, buffer_shape=buffer_shape)
         self.sample_fn = sample_fn or ContinuousActionSpace._default_sample_fn
@@ -76,6 +78,7 @@ class DiscreteActionSpace(ActionSpace):
 
             Only use this when it is different from shape.
     """
+
     def __init__(self, shape, low, high, buffer_shape=None):
         super(DiscreteActionSpace, self).__init__(shape, buffer_shape=buffer_shape)
         self._low = low
@@ -85,5 +88,6 @@ class DiscreteActionSpace(ActionSpace):
         return np.random.randint(self._low, self._high, self._shape, dtype=np.int32)
 
     def __repr__(self):
-        return "[DiscreteActionSpace " + str(self._shape) + ", min: " +\
-               str(self._low) + ", max: " + str(self._high) + "]"
+        return "[DiscreteActionSpace {} , min: {} , max: {}]".format(
+            self._shape, self._low, self._high
+        )

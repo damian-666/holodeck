@@ -12,10 +12,10 @@ def pytest_generate_tests(metafunc):
             for config, full_path in pm._iter_scenarios(world_entry["name"]):
                 scenarios.add("{}-{}".format(config["world"], config["name"]))
 
-    if 'scenario' in metafunc.fixturenames:
-        metafunc.parametrize('scenario', scenarios)
-    elif 'env_scenario' in metafunc.fixturenames:
-        metafunc.parametrize('env_scenario', scenarios, indirect=True)
+    if "scenario" in metafunc.fixturenames:
+        metafunc.parametrize("scenario", scenarios)
+    elif "env_scenario" in metafunc.fixturenames:
+        metafunc.parametrize("env_scenario", scenarios, indirect=True)
 
 
 # Envs contains a mapping of scenario key -> HolodeckEnvironment so that between

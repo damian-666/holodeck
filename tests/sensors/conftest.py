@@ -3,19 +3,23 @@ import pytest
 import uuid
 import holodeck
 
+
 def pytest_generate_tests(metafunc):
     """Iterate over every scenario
     """
-    if 'resolution' in metafunc.fixturenames:
-        metafunc.parametrize('resolution', [256, 512, 1024, 2048])
-    elif '1024_env' in metafunc.fixturenames:
-        metafunc.parametrize('env_1024', [1024], indirect=True)
-    elif 'ticks_per_capture' in metafunc.fixturenames:
-        metafunc.parametrize('ticks_per_capture', [30, 15, 10, 5, 2])
-    elif 'joint_agent_type' in metafunc.fixturenames:
-        metafunc.parametrize('joint_agent_type', [("AndroidAgent", android_joints), ("HandAgent", handagent_joints)])
-    elif 'rotation_env' in metafunc.fixturenames:
-        metafunc.parametrize('rotation_env', ['rotation_env'], indirect=True)
+    if "resolution" in metafunc.fixturenames:
+        metafunc.parametrize("resolution", [256, 512, 1024, 2048])
+    elif "1024_env" in metafunc.fixturenames:
+        metafunc.parametrize("env_1024", [1024], indirect=True)
+    elif "ticks_per_capture" in metafunc.fixturenames:
+        metafunc.parametrize("ticks_per_capture", [30, 15, 10, 5, 2])
+    elif "joint_agent_type" in metafunc.fixturenames:
+        metafunc.parametrize(
+            "joint_agent_type",
+            [("AndroidAgent", android_joints), ("HandAgent", handagent_joints)],
+        )
+    elif "rotation_env" in metafunc.fixturenames:
+        metafunc.parametrize("rotation_env", ["rotation_env"], indirect=True)
 
 
 shared_1024_env = None
@@ -36,28 +40,29 @@ def env_1024(request):
                 "sensors": [
                     {
                         "sensor_type": "ViewportCapture",
-                        "configuration": {
-                            "CaptureWidth": 1024,
-                            "CaptureHeight": 1024
-                        }
+                        "configuration": {"CaptureWidth": 1024, "CaptureHeight": 1024,},
                     }
                 ],
                 "control_scheme": 0,
-                "location": [.95, -1.75, .5]
+                "location": [0.95, -1.75, 0.5],
             }
         ],
         "window_width": 1024,
-        "window_height": 1024
+        "window_height": 1024,
     }
-    
+
     global shared_1024_env
 
     if shared_1024_env is None:
-        binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
-        shared_1024_env = holodeck.environments.HolodeckEnvironment(scenario=cfg,
-                                                                    binary_path=binary_path,
-                                                                    show_viewport=False,
-                                                                    uuid=str(uuid.uuid4()))
+        binary_path = holodeck.packagemanager.get_binary_path_for_package(
+            "DefaultWorlds"
+        )
+        shared_1024_env = holodeck.environments.HolodeckEnvironment(
+            scenario=cfg,
+            binary_path=binary_path,
+            show_viewport=False,
+            uuid=str(uuid.uuid4()),
+        )
 
     shared_1024_env.reset()
 
@@ -79,26 +84,25 @@ def rotation_env(request):
             {
                 "agent_name": "sphere0",
                 "agent_type": "SphereAgent",
-                "sensors": [
-                    {
-                        "sensor_type": "RGBCamera",
-                        "rotation": [0, -90, 0]
-                    }
-                ],
+                "sensors": [{"sensor_type": "RGBCamera", "rotation": [0, -90, 0]}],
                 "control_scheme": 0,
-                "location": [.95, -1.75, .5]
+                "location": [0.95, -1.75, 0.5],
             }
-        ]
+        ],
     }
 
     global shared_rotation_env
 
     if shared_rotation_env is None:
-        binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
-        shared_rotation_env = holodeck.environments.HolodeckEnvironment(scenario=cfg,
-                                                                        binary_path=binary_path,
-                                                                        show_viewport=False,
-                                                                        uuid=str(uuid.uuid4()))
+        binary_path = holodeck.packagemanager.get_binary_path_for_package(
+            "DefaultWorlds"
+        )
+        shared_rotation_env = holodeck.environments.HolodeckEnvironment(
+            scenario=cfg,
+            binary_path=binary_path,
+            show_viewport=False,
+            uuid=str(uuid.uuid4()),
+        )
 
     shared_rotation_env.reset()
     return shared_rotation_env
@@ -198,7 +202,7 @@ android_joints = [
     "index_03_r_swing1",
     "middle_03_r_swing1",
     "ring_03_r_swing1",
-    "pinky_03_r_swing1"
+    "pinky_03_r_swing1",
 ]
 
 
@@ -225,5 +229,5 @@ handagent_joints = [
     "index_03_r_swing1",
     "middle_03_r_swing1",
     "ring_03_r_swing1",
-    "pinky_03_r_swing1"
+    "pinky_03_r_swing1",
 ]

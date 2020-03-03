@@ -109,7 +109,7 @@ def world_command_examples():
     env.reset()
 
     # The set_fog_density changes the density of the fog in the world. 1 is the maximum density.
-    env.set_fog_density(.25)
+    env.set_fog_density(0.25)
     for _ in range(300):
         _ = env.tick()
     env.reset()
@@ -154,8 +154,12 @@ def editor_multi_agent_example():
     This is specifically for when working with UE4 directly and not a prebuilt binary.
     """
     agent_definitions = [
-        AgentDefinition("uav0", agents.UavAgent, [sensors.RGBCamera, sensors.LocationSensor]),
-        AgentDefinition("uav1", agents.UavAgent, [sensors.LocationSensor, sensors.VelocitySensor])
+        AgentDefinition(
+            "uav0", agents.UavAgent, [sensors.RGBCamera, sensors.LocationSensor]
+        ),
+        AgentDefinition(
+            "uav1", agents.UavAgent, [sensors.LocationSensor, sensors.VelocitySensor]
+        ),
     ]
     env = HolodeckEnvironment(agent_definitions, start_world=False)
 

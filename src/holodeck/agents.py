@@ -25,6 +25,7 @@ class ControlSchemes:
             altitude targets.
         HAND_AGENT_MAX_TORQUES (int): Default Android control scheme. Specify a torque for each joint.
     """
+
     # Android Control Schemes
     ANDROID_DIRECT_TORQUES = 0
     ANDROID_MAX_SCALED_TORQUES = 1
@@ -42,9 +43,9 @@ class ControlSchemes:
 
     # HandAgent Control Schemes
     HAND_AGENT_MAX_TORQUES = 0
-    HAND_AGENT_MAX_SCALED_TORQUES = 1    
+    HAND_AGENT_MAX_SCALED_TORQUES = 1
     HAND_AGENT_MAX_TORQUES_FLOAT = 2
-    
+
 
 class HolodeckAgent:
     """A learning agent in Holodeck
@@ -75,17 +76,26 @@ class HolodeckAgent:
 
         self._num_control_schemes = len(self.control_schemes)
 
-        self._max_control_scheme_length = \
-            max(map(lambda x: reduce(lambda i, j: i * j, x[1].buffer_shape),
-                    self.control_schemes))
+        self._max_control_scheme_length = max(
+            map(
+                lambda x: reduce(lambda i, j: i * j, x[1].buffer_shape),
+                self.control_schemes,
+            )
+        )
 
-        self._action_buffer = \
-            self._client.malloc(name, [self._max_control_scheme_length], np.float32)
+        self._action_buffer = self._client.malloc(
+            name, [self._max_control_scheme_length], np.float32
+        )
         # Teleport flag: 0: do nothing, 1: teleport, 2: rotate, 3: teleport and rotate
-        self._teleport_type_buffer = self._client.malloc(name + "_teleport_flag", [1], np.uint8)
-        self._teleport_buffer = self._client.malloc(name + "_teleport_command", [12], np.float32)
-        self._control_scheme_buffer = self._client.malloc(name + "_control_scheme", [1],
-                                                          np.uint8)
+        self._teleport_type_buffer = self._client.malloc(
+            name + "_teleport_flag", [1], np.uint8
+        )
+        self._teleport_buffer = self._client.malloc(
+            name + "_teleport_command", [12], np.float32
+        )
+        self._control_scheme_buffer = self._client.malloc(
+            name + "_control_scheme", [1], np.uint8
+        )
         self._current_control_scheme = 0
         self.set_control_scheme(0)
 
@@ -236,7 +246,7 @@ class HolodeckAgent:
         raise NotImplementedError("Child class must implement this function")
 
     def __act__(self, action):
-        
+
         # Allow for smaller arrays to be provided as input
         if len(self._action_buffer) > len(action):
             action = np.copy(action)
@@ -269,10 +279,16 @@ class UavAgent(HolodeckAgent):
 
     @property
     def control_schemes(self):
-        return [("[pitch_torque, roll_torque, yaw_torque, thrust]",
-                 ContinuousActionSpace([4])),
-                ("[pitch_target, roll_target, yaw_rate_target, altitude_target]",
-                 ContinuousActionSpace([4]))]
+        return [
+            (
+                "[pitch_torque, roll_torque, yaw_torque, thrust]",
+                ContinuousActionSpace([4]),
+            ),
+            (
+                "[pitch_target, roll_target, yaw_rate_target, altitude_target]",
+                ContinuousActionSpace([4]),
+            ),
+        ]
 
     def __repr__(self):
         return "UavAgent " + self.name
@@ -308,9 +324,13 @@ class SphereAgent(HolodeckAgent):
 
     @property
     def control_schemes(self):
-        return [("[forward_movement, rotation]", ContinuousActionSpace([2])),
-                ("0: Move forward\n1: Move backward\n2: Turn right\n3: Turn left",
-                 DiscreteActionSpace([1], 0, 4, buffer_shape=[2]))]
+        return [
+            ("[forward_movement, rotation]", ContinuousActionSpace([2])),
+            (
+                "0: Move forward\n1: Move backward\n2: Turn right\n3: Turn left",
+                DiscreteActionSpace([1], 0, 4, buffer_shape=[2]),
+            ),
+        ]
 
     def __act__(self, action):
         if self._current_control_scheme is ControlSchemes.SPHERE_CONTINUOUS:
@@ -318,7 +338,7 @@ class SphereAgent(HolodeckAgent):
         elif self._current_control_scheme is ControlSchemes.SPHERE_DISCRETE:
             # Move forward .185 meters (to match initial release)
             # Turn 10/-10 degrees (to match initial release)
-            actions = np.array([[.185, 0], [-.185, 0], [0, 10], [0, -10]])
+            actions = np.array([[0.185, 0], [-0.185, 0], [0, 10], [0, -10]])
             to_act = np.array(actions[action, :])
             np.copyto(self._action_buffer, to_act)
 
@@ -346,9 +366,14 @@ class AndroidAgent(HolodeckAgent):
 
     @property
     def control_schemes(self):
-        return [("[Raw Bone Torques] * 94", ContinuousActionSpace([94])),
-                ("[-1 to 1] * 94, where 1 is the maximum torque for a given "
-                 "joint (based on mass of bone)", ContinuousActionSpace([94]))]
+        return [
+            ("[Raw Bone Torques] * 94", ContinuousActionSpace([94])),
+            (
+                "[-1 to 1] * 94, where 1 is the maximum torque for a given "
+                "joint (based on mass of bone)",
+                ContinuousActionSpace([94]),
+            ),
+        ]
 
     def __repr__(self):
         return "AndroidAgent " + self.name
@@ -382,7 +407,6 @@ class AndroidAgent(HolodeckAgent):
         "upperarm_r": 21,
         "lowerarm_r": 24,
         "hand_r": 27,
-
         # Leg Joints. Each has[swing1, swing2, twist]
         "thigh_l": 30,
         "calf_l": 33,
@@ -392,7 +416,6 @@ class AndroidAgent(HolodeckAgent):
         "calf_r": 45,
         "foot_r": 48,
         "ball_r": 51,
-
         # First joint of each finger. Has only [swing1, swing2]
         "thumb_01_l": 54,
         "index_01_l": 56,
@@ -404,7 +427,6 @@ class AndroidAgent(HolodeckAgent):
         "middle_01_r": 68,
         "ring_01_r": 70,
         "pinky_01_r": 72,
-
         # Second joint of each finger. Has only[swing1]
         "thumb_02_l": 74,
         "index_02_l": 75,
@@ -416,7 +438,6 @@ class AndroidAgent(HolodeckAgent):
         "middle_02_r": 81,
         "ring_02_r": 82,
         "pinky_02_r": 83,
-
         # Third joint of each finger. Has only[swing1]
         "thumb_03_l": 84,
         "index_03_l": 85,
@@ -427,7 +448,7 @@ class AndroidAgent(HolodeckAgent):
         "index_03_r": 90,
         "middle_03_r": 91,
         "ring_03_r": 92,
-        "pinky_03_r": 93
+        "pinky_03_r": 93,
     }
 
 
@@ -453,11 +474,18 @@ class HandAgent(HolodeckAgent):
 
     @property
     def control_schemes(self):
-        return [("[Raw Bone Torques] * 23", ContinuousActionSpace([23])),
-                ("[-1 to 1] * 23, where 1 is the maximum torque for a given "
-                 "joint (based on mass of bone)", ContinuousActionSpace([23])),
-                 ("[-1 to 1] * 23, scaled torques, then [x, y, z] transform",
-                 ContinuousActionSpace([26]))]
+        return [
+            ("[Raw Bone Torques] * 23", ContinuousActionSpace([23])),
+            (
+                "[-1 to 1] * 23, where 1 is the maximum torque for a given "
+                "joint (based on mass of bone)",
+                ContinuousActionSpace([23]),
+            ),
+            (
+                "[-1 to 1] * 23, scaled torques, then [x, y, z] transform",
+                ContinuousActionSpace([26]),
+            ),
+        ]
 
     def __repr__(self):
         return "HandAgent " + self.name
@@ -482,27 +510,24 @@ class HandAgent(HolodeckAgent):
     _joint_indices = {
         # Head, Spine, and Arm joints. Each has[swing1, swing2, twist]
         "hand_r": 0,
-
         # First joint of each finger. Has only [swing1, swing2]
         "thumb_01_r": 3,
         "index_01_r": 5,
         "middle_01_r": 7,
         "ring_01_r": 9,
         "pinky_01_r": 11,
-
         # Second joint of each finger. Has only[swing1]
         "thumb_02_r": 12,
         "index_02_r": 13,
         "middle_02_r": 14,
         "ring_02_r": 15,
         "pinky_02_r": 16,
-
         # Third joint of each finger. Has only[swing1]
         "thumb_03_r": 17,
         "index_03_r": 18,
         "middle_03_r": 19,
         "ring_03_r": 20,
-        "pinky_03_r": 21
+        "pinky_03_r": 21,
     }
 
 
@@ -583,11 +608,19 @@ class AgentDefinition:
         "NavAgent": NavAgent,
         "AndroidAgent": AndroidAgent,
         "HandAgent": HandAgent,
-        "TurtleAgent": TurtleAgent
+        "TurtleAgent": TurtleAgent,
     }
 
-    def __init__(self, agent_name, agent_type, sensors=None, starting_loc=(0, 0, 0),
-                 starting_rot=(0, 0, 0), existing=False, is_main_agent=False):
+    def __init__(
+        self,
+        agent_name,
+        agent_type,
+        sensors=None,
+        starting_loc=(0, 0, 0),
+        starting_rot=(0, 0, 0),
+        existing=False,
+        is_main_agent=False,
+    ):
         self.starting_loc = starting_loc
         self.starting_rot = starting_rot
         self.existing = existing
@@ -595,9 +628,9 @@ class AgentDefinition:
         self.is_main_agent = is_main_agent
         for i, sensor_def in enumerate(self.sensors):
             if not isinstance(sensor_def, SensorDefinition):
-                self.sensors[i] = \
-                    SensorDefinition(agent_name, agent_type, 
-                                     sensor_def.sensor_type, sensor_def)
+                self.sensors[i] = SensorDefinition(
+                    agent_name, agent_type, sensor_def.sensor_type, sensor_def
+                )
         self.name = agent_name
 
         if isinstance(agent_type, str):
@@ -609,6 +642,7 @@ class AgentDefinition:
 class AgentFactory:
     """Creates an agent object
     """
+
     @staticmethod
     def build_agent(client, agent_def):
         """Constructs an agent
